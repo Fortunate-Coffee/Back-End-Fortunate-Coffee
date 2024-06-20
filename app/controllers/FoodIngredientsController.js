@@ -175,6 +175,7 @@ class FoodIngredientsController extends ApplicationController {
         const detailFoodIngredients = await this.detailFoodIngredientsModel.findAll(filter);
         res.status(200).json(detailFoodIngredients);
       }
+      
     } catch (error) {
       res.status(404).json({
         error: {
