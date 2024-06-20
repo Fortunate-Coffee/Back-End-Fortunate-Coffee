@@ -130,6 +130,9 @@ class FoodIngredientsController extends ApplicationController {
       let dateFilter = {};
       const today = new Date();
       switch (period) {
+        case 'All':
+          dateFilter = {}; // No date filter
+          break;
         case 'Today':
           dateFilter = { [Op.gte]: today.setHours(0, 0, 0, 0) };
           break;
@@ -146,13 +149,20 @@ class FoodIngredientsController extends ApplicationController {
           break;
       }
 
-      let filter = {
-        where: {
-          updatedAt: dateFilter
-        }
-      };
+      let filter = {};
 
-      if (food_ingredients_id) {
+      if (type === 'Remaining Stock') {
+        // Ignore date filter for Remaining Stock
+        filter = { where: {} };
+      } else {
+        filter = {
+          where: {
+            updatedAt: dateFilter
+          }
+        };
+      }
+
+      if (food_ingredients_id && food_ingredients_id !== 'All') {
         filter.where.food_ingredients_id = food_ingredients_id;
       }
 
@@ -165,6 +175,7 @@ class FoodIngredientsController extends ApplicationController {
         const detailFoodIngredients = await this.detailFoodIngredientsModel.findAll(filter);
         res.status(200).json(detailFoodIngredients);
       }
+      
     } catch (error) {
       res.status(404).json({
         error: {

@@ -173,6 +173,9 @@ class OrderController extends ApplicationController {
       let dateFilter = {};
       const today = new Date();
       switch (period) {
+        case 'All':
+          dateFilter = {}; // No date filter
+          break;
         case 'Today':
           dateFilter = { [Op.gte]: today.setHours(0, 0, 0, 0) };
           break;
@@ -190,16 +193,18 @@ class OrderController extends ApplicationController {
       }
 
       let filter = {
-        where: {
-          createdAt: dateFilter
-        }
+        where: {}
       };
+  
+      if (period !== 'All') {
+        filter.where.createdAt = dateFilter;
+      }
 
       if (order_id) {
         filter.where.order_id = order_id;
       }
 
-      if (table_number) {
+      if (table_number && table_number !== 'All') {
         filter.where.table_number = table_number;
       }
 
