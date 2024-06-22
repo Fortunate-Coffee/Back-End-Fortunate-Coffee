@@ -157,7 +157,7 @@ class FoodIngredientsController extends ApplicationController {
       } else {
         filter = {
           where: {
-            updatedAt: dateFilter
+            ...(Object.keys(dateFilter).length > 0 && { updatedAt: dateFilter })
           }
         };
       }
