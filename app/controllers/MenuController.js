@@ -3,10 +3,12 @@ const imagekit = require('../lib/imageKitConfig');
 const { Op } = require('sequelize');
 
 class MenuController extends ApplicationController {
-  constructor({ categoryModel, menuModel }) {
+  constructor({ categoryModel, menuModel, foodIngredientsModel, menuIngredientsModel }) {
     super();
     this.categoryModel = categoryModel;
     this.menuModel = menuModel;
+    this.foodIngredientsModel = foodIngredientsModel;
+    this.menuIngredientsModel = menuIngredientsModel;
   }
 
   handleCreateMenu = async (req, res) => {
@@ -62,9 +64,28 @@ class MenuController extends ApplicationController {
   }
 
   handleGetMenu = async (req, res) => {
-    const menu = await this.getMenuFromRequest(req);
+    try {
+      const menu = await this.getMenuFromRequest(req);
 
-    res.status(200).json(menu);
+      if (!menu) {
+        return res.status(404).json({ error: { message: 'Menu not found' } });
+      }
+
+      const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+
+      res.status(200).json({
+        ...menu.toJSON(),
+        isOutOfStock,
+        stockWarnings
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
   }
 
   handleUpdateMenu = async (req, res) => {
@@ -171,11 +192,29 @@ class MenuController extends ApplicationController {
   }
 
   handleListMenu = async (req, res) => {
-    const menu = await this.menuModel.findAll({
-      include: this.categoryModel
-    })
+    try {
+      const menus = await this.menuModel.findAll({
+        include: this.categoryModel
+      });
 
-    res.status(200).json(menu)
+      const menuStatuses = await Promise.all(menus.map(async (menu) => {
+        const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+        return {
+          ...menu.toJSON(),
+          isOutOfStock,
+          stockWarnings
+        };
+      }));
+
+      res.status(200).json(menuStatuses);
+    } catch (error) {
+      res.status(500).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
   }
 
   handleGetMenuByCategoryId = async (req, res) => {
@@ -190,7 +229,16 @@ class MenuController extends ApplicationController {
         return res.status(404).json({ error: 'No menus found for this category' });
       }
 
-      res.status(200).json(menus);
+      const menuStatuses = await Promise.all(menus.map(async (menu) => {
+        const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+        return {
+          ...menu.toJSON(),
+          isOutOfStock,
+          stockWarnings
+        };
+      }));
+
+      res.status(200).json(menuStatuses);
     } catch (error) {
       console.error('Error getting menus by category ID:', error);
       res.status(500).json({ error: error.message });
@@ -235,6 +283,46 @@ class MenuController extends ApplicationController {
     }
   }
 
+  checkMenuStock = async (menu) => {
+    const menuIngredients = await this.menuIngredientsModel.findAll({
+      where: { menu_id: menu.menu_id },
+      include: [{
+        model: this.foodIngredientsModel,
+        as: 'food_ingredients'
+      }]
+    });
+  
+    console.log('menu ingredients with food ingredients:', JSON.stringify(menuIngredients, null, 2));
+  
+    let isOutOfStock = false;
+    const stockWarnings = [];
+  
+    for (const ingredient of menuIngredients) {
+      const requiredQuantity = ingredient.menu_ingredients_qty;
+  
+      // Ensure the food_ingredients is correctly referenced
+      const foodIngredient = ingredient.food_ingredients[0]; // Assuming food_ingredients is an array
+  
+      if (!foodIngredient) {
+        console.error(`No food ingredient found for menu ingredient with ID: ${ingredient.menu_ingredients_id}`);
+        continue;
+      }
+  
+      const stock = foodIngredient.food_ingredients_stock;
+  
+      console.log(`stock for ingredient ${foodIngredient.food_ingredients_name}: `, stock);
+      console.log(`required quantity for ingredient ${foodIngredient.food_ingredients_name}: `, requiredQuantity);
+  
+      if (stock < requiredQuantity) {
+        isOutOfStock = true; // Menu is out of stock
+      } else if (stock - requiredQuantity < 5) {
+        stockWarnings.push(`Warning: ${foodIngredient.food_ingredients_name} stock is low`);
+      }
+    }
+  
+    return { isOutOfStock, stockWarnings };
+  }
+  
   getMenuFromRequest(req) {
     return this.menuModel.findByPk(req.params.id);
   }
