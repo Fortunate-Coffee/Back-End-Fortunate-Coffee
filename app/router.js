@@ -41,7 +41,7 @@ function apply(app) {
   const authenticationController = new AuthenticationController({ bcrypt, jwt, userModel });
   const accessControl = authenticationController.accessControl;
   const categoryController = new CategoryController({ categoryModel });
-  const menuController = new MenuController({ categoryModel, menuModel });
+  const menuController = new MenuController({ categoryModel, menuModel, foodIngredientsModel, menuIngredientsModel });
   const foodIngredientsController = new FoodIngredientsController({ foodIngredientsModel, detailFoodIngredientsModel });
   const detailFoodIngredientsController = new DetailFoodIngredientsController({ foodIngredientsModel, detailFoodIngredientsModel });
   const menuIngredientsController = new MenuIngredientsController({ menuModel, foodIngredientsModel, menuIngredientsModel });
