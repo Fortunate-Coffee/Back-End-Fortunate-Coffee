@@ -71,12 +71,13 @@ class MenuController extends ApplicationController {
         return res.status(404).json({ error: { message: 'Menu not found' } });
       }
 
-      const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+      const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
 
       res.status(200).json({
         ...menu.toJSON(),
         isOutOfStock,
-        stockWarnings
+        stockWarnings,
+        OutOfStock
       });
     } catch (error) {
       res.status(500).json({
@@ -198,11 +199,12 @@ class MenuController extends ApplicationController {
       });
 
       const menuStatuses = await Promise.all(menus.map(async (menu) => {
-        const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+        const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
         return {
           ...menu.toJSON(),
           isOutOfStock,
-          stockWarnings
+          stockWarnings,
+          OutOfStock
         };
       }));
 
@@ -230,11 +232,12 @@ class MenuController extends ApplicationController {
       }
 
       const menuStatuses = await Promise.all(menus.map(async (menu) => {
-        const { isOutOfStock, stockWarnings } = await this.checkMenuStock(menu);
+        const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
         return {
           ...menu.toJSON(),
           isOutOfStock,
-          stockWarnings
+          stockWarnings,
+          OutOfStock
         };
       }));
 
@@ -296,6 +299,7 @@ class MenuController extends ApplicationController {
   
     let isOutOfStock = false;
     const stockWarnings = [];
+    const OutOfStock = [];
   
     for (const ingredient of menuIngredients) {
       const requiredQuantity = ingredient.menu_ingredients_qty;
@@ -315,12 +319,13 @@ class MenuController extends ApplicationController {
   
       if (stock < requiredQuantity) {
         isOutOfStock = true; // Menu is out of stock
+        OutOfStock.push(`${foodIngredient.food_ingredients_name} out of stock`);
       } else if (stock - requiredQuantity < 5) {
-        stockWarnings.push(`Warning: ${foodIngredient.food_ingredients_name} stock is low`);
+        stockWarnings.push(`${foodIngredient.food_ingredients_name} stock is low`);
       }
     }
   
-    return { isOutOfStock, stockWarnings };
+    return { isOutOfStock, OutOfStock, stockWarnings };
   }
   
   getMenuFromRequest(req) {
