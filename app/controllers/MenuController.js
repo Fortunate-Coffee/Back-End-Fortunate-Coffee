@@ -71,13 +71,14 @@ class MenuController extends ApplicationController {
         return res.status(404).json({ error: { message: 'Menu not found' } });
       }
 
-      const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
+      const { isOutOfStock, stockWarnings, OutOfStock, maxStockCanBeMade } = await this.checkMenuStock(menu);
 
       res.status(200).json({
         ...menu.toJSON(),
         isOutOfStock,
         stockWarnings,
-        OutOfStock
+        OutOfStock,
+        maxStockCanBeMade
       });
     } catch (error) {
       res.status(500).json({
@@ -199,12 +200,13 @@ class MenuController extends ApplicationController {
       });
 
       const menuStatuses = await Promise.all(menus.map(async (menu) => {
-        const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
+        const { isOutOfStock, stockWarnings, OutOfStock, maxStockCanBeMade } = await this.checkMenuStock(menu);
         return {
           ...menu.toJSON(),
           isOutOfStock,
           stockWarnings,
-          OutOfStock
+          OutOfStock,
+          maxStockCanBeMade
         };
       }));
 
@@ -232,12 +234,13 @@ class MenuController extends ApplicationController {
       }
 
       const menuStatuses = await Promise.all(menus.map(async (menu) => {
-        const { isOutOfStock, stockWarnings, OutOfStock } = await this.checkMenuStock(menu);
+        const { isOutOfStock, stockWarnings, OutOfStock, maxStockCanBeMade } = await this.checkMenuStock(menu);
         return {
           ...menu.toJSON(),
           isOutOfStock,
           stockWarnings,
-          OutOfStock
+          OutOfStock,
+          maxStockCanBeMade
         };
       }));
 
@@ -300,6 +303,7 @@ class MenuController extends ApplicationController {
     let isOutOfStock = false;
     const stockWarnings = [];
     const OutOfStock = [];
+    let maxStockCanBeMade = Infinity; // Inisialisasi maksimum stock yang dapat dibuat
   
     for (const ingredient of menuIngredients) {
       const requiredQuantity = ingredient.menu_ingredients_qty;
@@ -316,6 +320,12 @@ class MenuController extends ApplicationController {
   
       console.log(`stock for ingredient ${foodIngredient.food_ingredients_name}: `, stock);
       console.log(`required quantity for ingredient ${foodIngredient.food_ingredients_name}: `, requiredQuantity);
+
+      // Hitung maksimum stock yang dapat dibuat berdasarkan ketersediaan bahan makanan
+      const maxStockPossible = Math.floor(stock / requiredQuantity);
+      if (maxStockPossible < maxStockCanBeMade) {
+        maxStockCanBeMade = maxStockPossible;
+      }
   
       if (stock < requiredQuantity) {
         isOutOfStock = true; // Menu is out of stock
@@ -325,7 +335,7 @@ class MenuController extends ApplicationController {
       }
     }
   
-    return { isOutOfStock, OutOfStock, stockWarnings };
+    return { isOutOfStock, OutOfStock, stockWarnings, maxStockCanBeMade };
   }
   
   getMenuFromRequest(req) {
