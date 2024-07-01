@@ -77,7 +77,7 @@ function apply(app) {
     .delete(authenticationController.authorizeRoles([accessControl.OWNER, accessControl.ADMIN]), menuController.handleDeleteMenu);
   
   app.get("/api/v1/menu/category/:id", menuController.handleGetMenuByCategoryId);
-  app.get("/api/v1/menu/search", menuController.handleSearch);
+  app.get("/api/v1/find-menu/search", menuController.handleSearch);
 
   // Food Ingredients routes
   app.route("/api/v1/food-ingredients")

@@ -256,36 +256,41 @@ class MenuController extends ApplicationController {
       const { query } = req.query;
       console.log(`Received search query: ${query}`);
   
-      // Check for menu
-      const menu = await this.menuModel.findOne({
-        where: { menu_name: { [Op.like]: `%${query}%` } },
-        include: this.categoryModel
-      });
-  
-      if (menu) {
-        console.log('Menu found:', menu);
-
-        // Fetch the category details by ID
-        const category = await this.categoryModel.findByPk(menu.category_id);
-
-        if (!category) {
-          return res.status(404).json({ error: 'Category not found' });
-        }
-
-        return res.status(200).json({
-          type: 'menu',
-          data: {
-            menu: menu,
-            category: category
-          }
-        });
+      if (!query) {
+        return res.status(400).json({ error: { message: "Query parameter is required" } });
       }
-  
-      console.log('No results found for query:', query);
-      return res.status(404).json({ error: 'No results found' });
+
+      const menus = await this.menuModel.findAll({
+        where: {
+          menu_name: {
+            [Op.like]: `%${query}%`
+          }
+        }
+      });
+
+      if (menus.length === 0) {
+        return res.status(404).json({ error: { message: 'No menus found' } });
+      }
+
+      const menuDetails = await Promise.all(menus.map(async (menu) => {
+        const { isOutOfStock, stockWarnings, OutOfStock, maxStockCanBeMade } = await this.checkMenuStock(menu);
+        return {
+          ...menu.toJSON(),
+          isOutOfStock,
+          stockWarnings,
+          OutOfStock,
+          maxStockCanBeMade
+        };
+      }));
+
+      res.status(200).json(menuDetails);
     } catch (error) {
-      console.error('Error during search:', error);
-      return res.status(500).json({ error: error.message });
+      res.status(500).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
     }
   }
 
