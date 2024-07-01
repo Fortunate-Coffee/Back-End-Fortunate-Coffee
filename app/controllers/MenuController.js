@@ -263,7 +263,7 @@ class MenuController extends ApplicationController {
       const menus = await this.menuModel.findAll({
         where: {
           menu_name: {
-            [Op.like]: `%${query}%`
+            [Op.iLike]: `%${query}%`
           }
         }
       });
