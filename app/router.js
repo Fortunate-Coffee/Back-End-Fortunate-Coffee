@@ -122,6 +122,7 @@ function apply(app) {
 
   app.route("/api/v1/cart")
     .post(cartController.addToCart)
+    .put(cartController.updateCartItem)
     .get(cartController.handleGetCart);
 
   // Order routes
