@@ -1,0 +1,17 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "app/index.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "buildCommand": "yarn install",
+    "installCommand": "yarn install -g pg",
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "app/index.js"
+      }
+    ]
+  }
