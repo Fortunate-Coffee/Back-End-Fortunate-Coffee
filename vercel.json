@@ -7,7 +7,7 @@
       }
     ],
     "buildCommand": "yarn start",
-    "installCommand": "yarn install -g pg",
+    "installCommand": "yarn install",
     "routes": [
       {
         "src": "/(.*)",
