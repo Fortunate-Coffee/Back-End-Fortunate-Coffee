@@ -1,3 +1,4 @@
+const pg = require('pg');
 const {
   PGHOST = "localhost",
   PGPORT = "5432",
