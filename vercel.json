@@ -14,7 +14,7 @@
         "dest": "app/index.js"
       },
       {
-        "src": "/(.*)",
+        "src": "/api/v1/menu",
         "dest": "app/router.js"
       }
     ]
