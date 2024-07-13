@@ -3,7 +3,7 @@ const { NotFoundError } = require("../errors");
 class ApplicationController {
   handleGetRoot = (req, res) => {
     res.status(200).json({
-      status: "OK",
+      status: "Fortune is coming!",
       message: "Fortunate Coffee's API is up and running!"
     });
   }
