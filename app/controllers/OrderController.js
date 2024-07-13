@@ -197,7 +197,7 @@ class OrderController extends ApplicationController {
       };
   
       if (period !== 'All') {
-        filter.where.createdAt = dateFilter;
+        filter.where.updatedAt = dateFilter;
       }
 
       if (order_id) {

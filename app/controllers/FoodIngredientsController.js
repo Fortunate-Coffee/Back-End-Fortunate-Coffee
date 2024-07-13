@@ -126,15 +126,19 @@ class FoodIngredientsController extends ApplicationController {
   handleGetFilteredFoodIngredients = async (req, res) => {
     try {
       const { food_ingredients_id, type, period } = req.query;
-      
+
+      console.log('Received query parameters:', { food_ingredients_id, type, period });
+
       let dateFilter = {};
       const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to beginning of the day
+
       switch (period) {
         case 'All':
           dateFilter = {}; // No date filter
           break;
         case 'Today':
-          dateFilter = { [Op.gte]: today.setHours(0, 0, 0, 0) };
+          dateFilter = { [Op.gte]: today };
           break;
         case 'Last 7 days':
           dateFilter = { [Op.gte]: new Date(today - 7 * 24 * 60 * 60 * 1000) };
@@ -149,34 +153,44 @@ class FoodIngredientsController extends ApplicationController {
           break;
       }
 
-      let filter = {};
+      console.log('Constructed date filter:', dateFilter);
+
+      let filter = {
+        where: {}
+      };
 
       if (type === 'Remaining Stock') {
         // Ignore date filter for Remaining Stock
-        filter = { where: {} };
+        console.log('Type is Remaining Stock, ignoring date filter');
       } else {
-        filter = {
-          where: {
-            ...(Object.keys(dateFilter).length > 0 && { updatedAt: dateFilter })
-          }
-        };
+          filter.where.updatedAt = dateFilter;
+          console.log('Applied date filter:', dateFilter);
       }
 
       if (food_ingredients_id && food_ingredients_id !== 'All') {
         filter.where.food_ingredients_id = food_ingredients_id;
+        console.log('Applied food_ingredients_id filter:', food_ingredients_id);
       }
 
-      if (type === 'Remaining Stock') {
-        const foodIngredients = await this.foodIngredientsModel.findAll(filter);
-        res.status(200).json(foodIngredients);
-      } 
-      else {
-        filter.where.detail_food_ingredients_type = type;
-        const detailFoodIngredients = await this.detailFoodIngredientsModel.findAll(filter);
-        res.status(200).json(detailFoodIngredients);
-      }
       
+
+      console.log('Final filter object:', filter);
+
+      let queryResult;
+      if (type === 'Remaining Stock') {
+        queryResult = await this.foodIngredientsModel.findAll(filter);
+        console.log('Found food ingredients:', queryResult);
+      } else {
+        filter.where.detail_food_ingredients_type = type;
+        console.log('Applied detail_food_ingredients_type filter:', type);
+        queryResult = await this.detailFoodIngredientsModel.findAll(filter);
+        console.log('Found detail food ingredients:', queryResult);
+      }
+
+      res.status(200).json(queryResult);
+
     } catch (error) {
+      console.error('Error in handleGetFilteredFoodIngredients:', error);
       res.status(404).json({
         error: {
           name: error.name,
