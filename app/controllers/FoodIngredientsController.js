@@ -163,16 +163,16 @@ class FoodIngredientsController extends ApplicationController {
         // Ignore date filter for Remaining Stock
         console.log('Type is Remaining Stock, ignoring date filter');
       } else {
-          filter.where.updatedAt = dateFilter;
-          console.log('Applied date filter:', dateFilter);
+          if (period !== 'All') {
+            filter.where.updatedAt = dateFilter;
+            console.log('Applied date filter:', dateFilter);
+          }
       }
 
       if (food_ingredients_id && food_ingredients_id !== 'All') {
         filter.where.food_ingredients_id = food_ingredients_id;
         console.log('Applied food_ingredients_id filter:', food_ingredients_id);
       }
-
-      
 
       console.log('Final filter object:', filter);
 
