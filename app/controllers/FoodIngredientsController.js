@@ -144,6 +144,36 @@ class FoodIngredientsController extends ApplicationController {
     }
   }
 
+  handleListFoodIngredientsInStock = async (req, res) => {
+    try {
+      // Fetch food ingredients with stock greater than 0
+      const foodIngredientsInStock = await this.foodIngredientsModel.findAll({
+        where: {
+          food_ingredients_stock: {
+            [Op.gt]: 0 // Greater than 0
+          }
+        }
+      });
+
+      // Add alert for low stock
+      const response = foodIngredientsInStock.map(fi => {
+        const alert = fi.food_ingredients_stock <= 5
+          ? `Stock for ${fi.food_ingredients_name} is running low.`
+          : null;
+        return { ...fi.toJSON(), alert };
+      });
+
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(404).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
+  }
+
   handleGetFilteredFoodIngredients = async (req, res) => {
     try {
       const { food_ingredients_id, type, period } = req.query;
