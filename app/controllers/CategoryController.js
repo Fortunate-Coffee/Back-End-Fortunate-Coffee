@@ -152,6 +152,39 @@ class CategoryController extends ApplicationController {
     res.status(200).json(category)
   }
 
+  handleListCategoryInUse = async (req, res) => {
+    try {
+      // Fetch category IDs that are used in the menu
+      const usedCategories = await this.menuModel.findAll({
+        attributes: ['category_id'],
+        group: ['category_id']
+      });
+
+      // Extract the unique category IDs
+      const usedCategoryIds = usedCategories.map(item => item.category_id);
+
+      if (usedCategoryIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // Retrieve the categories that are still in use
+      const categoriesInUse = await this.categoryModel.findAll({
+        where: {
+          category_id: usedCategoryIds
+        }
+      });
+
+      res.status(200).json(categoriesInUse);
+    } catch (error) {
+      res.status(422).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
+  }
+
   getCategoryFromRequest(req) {
     return this.categoryModel.findByPk(req.params.id);
   }

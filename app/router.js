@@ -60,6 +60,8 @@ function apply(app) {
   app.route("/api/v1/category")
     .post(authenticationController.authorizeRoles([accessControl.OWNER, accessControl.ADMIN]), uploader.single('category_image'), categoryController.handleCreateCategory)
     .get(categoryController.handleListCategory);
+  
+  app.get("/api/v1/category-used", categoryController.handleListCategoryInUse);
 
   app.route("/api/v1/category/:id")
     .get(categoryController.handleGetCategory)
@@ -88,6 +90,8 @@ function apply(app) {
     .get(foodIngredientsController.handleGetFoodIngredients)
     .put(authenticationController.authorizeRoles([accessControl.OWNER, accessControl.ADMIN]), foodIngredientsController.handleUpdateFoodIngredients)
     .delete(authenticationController.authorizeRoles([accessControl.OWNER, accessControl.ADMIN]), foodIngredientsController.handleDeleteFoodIngredients);
+
+  app.get("/api/v1/food-ingredients-used", foodIngredientsController.handleListFoodIngredientsInStock);
 
   // Filtered food ingredients route
   app.route("/api/v1/filtered-food-ingredients")
