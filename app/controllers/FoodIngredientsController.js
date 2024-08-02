@@ -96,9 +96,30 @@ class FoodIngredientsController extends ApplicationController {
   }
 
   handleDeleteFoodIngredients = async (req, res) => {
-    const foodIngredients = await this.getFoodIngredientsFromRequest(req);
-    await foodIngredients.destroy();
-    res.status(204).json(foodIngredients).end();
+    try {
+      const foodIngredients = await this.getFoodIngredientsFromRequest(req);
+
+      if (foodIngredients.food_ingredients_stock > 0) {
+        return res.status(422).json({
+          error: {
+            message: "Cannot delete stock because there is still remaining stock."
+          }
+        });
+      }
+
+      await foodIngredients.destroy();
+      res.status(204).json({
+        status: 'success',
+        message: 'Food ingredients deleted successfully'
+      }).end();
+    } catch (error) {
+      res.status(422).json({
+        error: {
+          name: error.name,
+          message: error.message
+        }
+      });
+    }
   }
 
   handleListFoodIngredients = async (req, res) => {

@@ -2,9 +2,10 @@ const ApplicationController = require('./ApplicationController');
 const imagekit = require('../lib/imageKitConfig');
 
 class CategoryController extends ApplicationController {
-  constructor({ categoryModel }) {
+  constructor({ categoryModel, menuModel }) {
     super();
     this.categoryModel = categoryModel;
+    this.menuModel = menuModel;
   }
 
   handleCreateCategory = async (req, res) => {
@@ -115,9 +116,34 @@ class CategoryController extends ApplicationController {
   }
 
   handleDeleteCategory = async (req, res) => {
-    const category = await this.getCategoryFromRequest(req);
-    await category.destroy();
-    res.status(204).json(category).end();
+    try {
+      const category = await this.getCategoryFromRequest(req);
+
+      // Check if there are any menus associated with this category
+      const menus = await this.menuModel.findAll({
+        where: { category_id: category.category_id }
+      });
+
+      if (menus.length > 0) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Cannot delete category because it has associated menus.'
+        });
+      }
+
+      await category.destroy();
+      res.status(204).json({
+        status: 'success',
+        message: 'Category deleted successfully'
+      }).end();
+    } catch (err) {
+      res.status(422).json({
+        error: {
+          name: err.name,
+          message: err.message,
+        }
+      });
+    }
   }
 
   handleListCategory = async (req, res) => {
