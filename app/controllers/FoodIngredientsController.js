@@ -2,10 +2,11 @@ const ApplicationController = require('./ApplicationController');
 const { Op } = require('sequelize');
 
 class FoodIngredientsController extends ApplicationController {
-  constructor({ foodIngredientsModel, detailFoodIngredientsModel }) {
+  constructor({ foodIngredientsModel, detailFoodIngredientsModel, menuIngredientsModel }) {
     super();
     this.foodIngredientsModel = foodIngredientsModel;
     this.detailFoodIngredientsModel = detailFoodIngredientsModel;
+    this.menuIngredientsModel = menuIngredientsModel;
   }
 
   handleCreateFoodIngredients = async (req, res) => {
@@ -98,15 +99,30 @@ class FoodIngredientsController extends ApplicationController {
   handleDeleteFoodIngredients = async (req, res) => {
     try {
       const foodIngredients = await this.getFoodIngredientsFromRequest(req);
-
-      if (foodIngredients.food_ingredients_stock > 0) {
+  
+      // Check if the food ingredient is used in any menu ingredients
+      const menuIngredients = await this.menuIngredientsModel.findOne({
+        where: {
+          food_ingredients_id: foodIngredients.food_ingredients_id
+        }
+      });
+  
+      if (menuIngredients) {
         return res.status(422).json({
           error: {
-            message: "Cannot delete stock because there is still remaining stock."
+            message: "Cannot delete food ingredient because it is still used in menu ingredients."
           }
         });
       }
-
+  
+      if (foodIngredients.food_ingredients_stock > 0) {
+        return res.status(422).json({
+          error: {
+            message: "Cannot delete food ingredient because there is still remaining stock."
+          }
+        });
+      }
+  
       await foodIngredients.destroy();
       res.status(204).json({
         status: 'success',
@@ -120,7 +136,7 @@ class FoodIngredientsController extends ApplicationController {
         }
       });
     }
-  }
+  }  
 
   handleListFoodIngredients = async (req, res) => {
     try {
@@ -146,23 +162,28 @@ class FoodIngredientsController extends ApplicationController {
 
   handleListFoodIngredientsInStock = async (req, res) => {
     try {
-      // Fetch food ingredients with stock greater than 0
-      const foodIngredientsInStock = await this.foodIngredientsModel.findAll({
-        where: {
-          food_ingredients_stock: {
-            [Op.gt]: 0 // Greater than 0
-          }
-        }
+      // Fetch all food ingredients
+      const foodIngredients = await this.foodIngredientsModel.findAll();
+  
+      // Fetch food ingredients that are listed in menu ingredients
+      const menuIngredients = await this.menuIngredientsModel.findAll({
+        attributes: ['food_ingredients_id'],
+        group: ['food_ingredients_id']
       });
-
+  
+      const usedFoodIngredientsIds = menuIngredients.map(mi => mi.food_ingredients_id);
+  
+      // Filter to include food ingredients with stock of 0 or not in menu ingredients
+      const filteredFoodIngredients = foodIngredients.filter(fi => fi.food_ingredients_stock === 0 || !usedFoodIngredientsIds.includes(fi.food_ingredients_id));
+  
       // Add alert for low stock
-      const response = foodIngredientsInStock.map(fi => {
+      const response = filteredFoodIngredients.map(fi => {
         const alert = fi.food_ingredients_stock <= 5
           ? `Stock for ${fi.food_ingredients_name} is running low.`
           : null;
         return { ...fi.toJSON(), alert };
       });
-
+  
       res.status(200).json(response);
     } catch (error) {
       res.status(404).json({
@@ -172,7 +193,7 @@ class FoodIngredientsController extends ApplicationController {
         }
       });
     }
-  }
+  }  
 
   handleGetFilteredFoodIngredients = async (req, res) => {
     try {
