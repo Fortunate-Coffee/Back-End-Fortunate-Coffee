@@ -173,8 +173,8 @@ class FoodIngredientsController extends ApplicationController {
   
       const usedFoodIngredientsIds = menuIngredients.map(mi => mi.food_ingredients_id);
   
-      // Filter to include food ingredients with stock of 0 or not in menu ingredients
-      const filteredFoodIngredients = foodIngredients.filter(fi => fi.food_ingredients_stock === 0 || !usedFoodIngredientsIds.includes(fi.food_ingredients_id));
+      // Filter to include food ingredients with stock of 0 and not in menu ingredients
+      const filteredFoodIngredients = foodIngredients.filter(fi => fi.food_ingredients_stock === 0 && !usedFoodIngredientsIds.includes(fi.food_ingredients_id));
   
       // Add alert for low stock
       const response = filteredFoodIngredients.map(fi => {
