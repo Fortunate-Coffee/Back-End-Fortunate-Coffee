@@ -42,7 +42,7 @@ function apply(app) {
   const accessControl = authenticationController.accessControl;
   const categoryController = new CategoryController({ categoryModel, menuModel });
   const menuController = new MenuController({ categoryModel, menuModel, foodIngredientsModel, menuIngredientsModel });
-  const foodIngredientsController = new FoodIngredientsController({ foodIngredientsModel, detailFoodIngredientsModel });
+  const foodIngredientsController = new FoodIngredientsController({ foodIngredientsModel, detailFoodIngredientsModel, menuIngredientsModel });
   const detailFoodIngredientsController = new DetailFoodIngredientsController({ foodIngredientsModel, detailFoodIngredientsModel });
   const menuIngredientsController = new MenuIngredientsController({ menuModel, foodIngredientsModel, menuIngredientsModel });
   const orderController = new OrderController({ userModel, orderModel, detailOrderModel, menuIngredientsModel, foodIngredientsModel, detailFoodIngredientsModel });
