@@ -1,17 +1,35 @@
-# ANALISIS DAN PENGEMBANGAN SISTEM PEMESANAN MAKANAN BERBASIS WEBSITE UNTUK MENDUKUNG OPERASIONAL LOVING NATURE FORTUNATE COFFEE (TA 2023/2024 S-1 UNIVERSITAS MIKROSKIL)
+# Analysis and Development of a Website-based Food Ordering System to Support the Operations of Loving Nature Fortunate Coffee in Medan
 
-### Description
-The repository has made with Express JS and PostGreSQL
+This is The Final Project for Loving Nature Fortunate Coffee in Medan by Creating The Website-based Food ordering using Express.JS and PostGreSQL
 
+## 🛠️ The Result Preview
 
-### Running public app
-Access this app on ``` ```
+![image](https://ik.imagekit.io/fndsjy/Fortunate_Coffee/API.png?updatedAt=1723784871790)
 
+## 🛠️ Tech Stack & Tools
 
-### Running local app
+- Express.JS
+- PostGreSQL
+- OOP JavaScript
+
+## 🛠️ Getting Started in Local
+First, install the library :
+```bash
+yarn install or yarn
 ```
-1. install yarn
-2. yarn db:setup
-3. yarn develop
 
+Delete and Create Database :
+
+```bash
+yarn db:setup
 ```
+
+Run the development server :
+
+```bash
+yarn start
+```
+
+Open [http://localhost:3001](http://localhost:3001) with your browser to see API is running.
+
+You can start editing the page by modifying `app\controllers`. You can check the result on Postman.
