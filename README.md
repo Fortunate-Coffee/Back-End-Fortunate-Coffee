@@ -6,22 +6,32 @@ This is The Final Project for Loving Nature Fortunate Coffee in Medan by Creatin
 
 ![image](https://ik.imagekit.io/fndsjy/Fortunate_Coffee/API.png?updatedAt=1723784871790)
 
-## 🛠️ Tech Stack & Tools
+## 🛠️ Tech Stack & Tools Information
 
 - Express.JS
 - PostGreSQL
 - OOP JavaScript
 
 ## 🛠️ Getting Started in Local
-First, install the library :
+
+First, install the library on your VSCode terminal :
 ```bash
 yarn install or yarn
 ```
 
-Delete and Create Database :
+Adjust to your PostgreSQL environment on :
+```bash
+back-end > config > database.js
+```
+
+Delete database to make sure don't have it yet, then create database yarn, create migration, and create seeders
 
 ```bash
 yarn db:setup
+```
+or
+```bash
+yarn db:drop && yarn db:create && yarn db:migrate && yarn db:seed
 ```
 
 Run the development server :
